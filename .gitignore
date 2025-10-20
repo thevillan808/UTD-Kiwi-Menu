@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.manifest
+*.spec
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# VSCode
+.vscode/
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtualenv
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+*.log
+
+# Test output
+htmlcov/
+.coverage
+.tox/
+.pytest_cache/
+
+# Data
+*.sqlite3
+*.db
+*.csv
+*.json
+*.tsv
+*.dat
+*.h5
+*.hdf5
+
+# Misc
+*.bak
+*.swp
+*.swo
+*.tmp
+*.orig
+
+# Node
+node_modules/
+
+# Others
+*.tar.gz
+*.zip
+*.7z
+*.rar
