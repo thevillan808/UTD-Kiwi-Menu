@@ -1,12 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 import enum
 
 Base = declarative_base()
 
-
+# User table
 class UserModel(Base):
     __tablename__ = 'users'
     
@@ -18,13 +17,15 @@ class UserModel(Base):
     balance = Column(Float, nullable=False, default=0.0)
     role = Column(String(20), nullable=False, default='user')
     
+    # relationships
     portfolios = relationship('PortfolioModel', back_populates='owner', cascade='all, delete-orphan')
     transactions = relationship('TransactionModel', back_populates='user', cascade='all, delete-orphan')
-    
-    def __repr__(self):
-        return f"<UserModel(username='{self.username}', role='{self.role}')>"
 
+    # relationships
+    portfolios = relationship('PortfolioModel', back_populates='owner', cascade='all, delete-orphan')
+    transactions = relationship('TransactionModel', back_populates='user', cascade='all, delete-orphan')
 
+# Portfolio table
 class PortfolioModel(Base):
     __tablename__ = 'portfolios'
     
@@ -34,14 +35,12 @@ class PortfolioModel(Base):
     investment_strategy = Column(String(100))
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     
+    # relationships
     owner = relationship('UserModel', back_populates='portfolios')
     investments = relationship('InvestmentModel', back_populates='portfolio', cascade='all, delete-orphan')
     transactions = relationship('TransactionModel', back_populates='portfolio', cascade='all, delete-orphan')
-    
-    def __repr__(self):
-        return f"<PortfolioModel(id={self.id}, name='{self.name}')>"
 
-
+# Security table
 class SecurityModel(Base):
     __tablename__ = 'securities'
     
@@ -50,13 +49,11 @@ class SecurityModel(Base):
     name = Column(String(100), nullable=False)
     reference_price = Column(Float, nullable=False)
     
+    # relationships
     investments = relationship('InvestmentModel', back_populates='security')
     transactions = relationship('TransactionModel', back_populates='security')
-    
-    def __repr__(self):
-        return f"<SecurityModel(ticker='{self.ticker}', name='{self.name}')>"
 
-
+# Investment table (portfolio holdings)
 class InvestmentModel(Base):
     __tablename__ = 'investments'
     
@@ -65,18 +62,16 @@ class InvestmentModel(Base):
     security_id = Column(Integer, ForeignKey('securities.id', ondelete='CASCADE'), nullable=False)
     quantity = Column(Integer, nullable=False, default=0)
     
+    # relationships
     portfolio = relationship('PortfolioModel', back_populates='investments')
     security = relationship('SecurityModel', back_populates='investments')
-    
-    def __repr__(self):
-        return f"<InvestmentModel(portfolio_id={self.portfolio_id}, security_id={self.security_id}, quantity={self.quantity})>"
 
-
+# Transaction type enum
 class TransactionType(enum.Enum):
     BUY = "BUY"
     SELL = "SELL"
 
-
+# Transaction history table
 class TransactionModel(Base):
     __tablename__ = 'transactions'
     
@@ -89,9 +84,8 @@ class TransactionModel(Base):
     price = Column(Float, nullable=False)
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
     
+    # relationships
     user = relationship('UserModel', back_populates='transactions')
     portfolio = relationship('PortfolioModel', back_populates='transactions')
     security = relationship('SecurityModel', back_populates='transactions')
-    
-    def __repr__(self):
-        return f"<TransactionModel(id={self.id}, type={self.transaction_type.value}, quantity={self.quantity})>"
+

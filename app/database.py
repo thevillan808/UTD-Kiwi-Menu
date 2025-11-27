@@ -1,50 +1,33 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import sessionmaker
 import os
 from .models import Base
 
-# Database configuration
+# Get database credentials from environment variables
 DB_USER = os.getenv('DB_USER', 'root')
 DB_PASSWORD = os.getenv('DB_PASSWORD', '')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '3306')
 DB_NAME = os.getenv('DB_NAME', 'kiwi_portfolio')
 
-# Build connection string
+# Create connection string for MySQL
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# Create engine
-engine = create_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_recycle=3600
-)
+# Create database engine
+engine = create_engine(DATABASE_URL, echo=False)
 
-# Session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Scoped session for thread safety
-db_session = scoped_session(SessionLocal)
-
+# Create session factory
+SessionLocal = sessionmaker(bind=engine)
 
 def init_db():
-    """Initialize database schema"""
+    # Create all tables
     Base.metadata.create_all(bind=engine)
 
-
 def get_session():
-    """Get a new database session"""
-    session = SessionLocal()
-    try:
-        return session
-    except Exception:
-        session.close()
-        raise
-
+    # Get new database session
+    return SessionLocal()
 
 def close_session(session):
-    """Close database session"""
+    # Close database session
     if session:
         session.close()

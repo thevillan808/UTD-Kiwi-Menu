@@ -5,7 +5,7 @@ Tests portfolio CRUD, investment tracking, and transactions.
 """
 
 import pytest
-from app import db_sqlalchemy as db
+from app import db
 from app.exceptions import (
     UserNotFoundException,
     PortfolioNotFoundException,

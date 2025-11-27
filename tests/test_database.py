@@ -5,7 +5,7 @@ Tests user CRUD operations, authentication, and admin protection.
 """
 
 import pytest
-from app import db_sqlalchemy as db
+from app import db
 from app.domain.User import User
 from app.exceptions import (
     UniqueConstraintError,

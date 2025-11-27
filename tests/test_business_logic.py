@@ -5,9 +5,9 @@ Tests buy/sell operations, transaction recording, and validation.
 """
 
 import pytest
-from app.service import portfolio_service_sqlalchemy as portfolio_service
-from app.service import user_service_sqlalchemy as user_service
-from app import db_sqlalchemy as db
+from app.service import portfolio_service
+from app.service import user_service
+from app import db
 from app.domain.User import User
 from app.exceptions import (
     InsufficientFundsException,

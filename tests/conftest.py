@@ -9,7 +9,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from app.models import Base
-from app import db_sqlalchemy as db
+from app import db
 
 # Use SQLite for testing
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -66,11 +66,11 @@ def test_db(test_session, monkeypatch):
 def sample_user(test_db):
     """Create a sample user for testing"""
     from app.models import UserModel
-    from app import db_sqlalchemy as db
+    from app import db
     
     user = UserModel(
         username="testuser",
-        password=db._hash_password("password123"),
+        password=db.hash_password("password123"),
         first_name="Test",
         last_name="User",
         balance=1000.0,
@@ -86,11 +86,11 @@ def sample_user(test_db):
 def sample_admin(test_db):
     """Create a sample admin for testing"""
     from app.models import UserModel
-    from app import db_sqlalchemy as db
+    from app import db
     
     admin = UserModel(
         username="admin",
-        password=db._hash_password("admin123"),
+        password=db.hash_password("admin123"),
         first_name="Admin",
         last_name="User",
         balance=10000.0,
