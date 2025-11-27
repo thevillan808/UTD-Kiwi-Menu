@@ -21,10 +21,6 @@ class UserModel(Base):
     portfolios = relationship('PortfolioModel', back_populates='owner', cascade='all, delete-orphan')
     transactions = relationship('TransactionModel', back_populates='user', cascade='all, delete-orphan')
 
-    # relationships
-    portfolios = relationship('PortfolioModel', back_populates='owner', cascade='all, delete-orphan')
-    transactions = relationship('TransactionModel', back_populates='user', cascade='all, delete-orphan')
-
 # Portfolio table
 class PortfolioModel(Base):
     __tablename__ = 'portfolios'

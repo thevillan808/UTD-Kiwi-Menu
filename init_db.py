@@ -6,7 +6,7 @@ default data including an admin user and available securities.
 """
 
 from app.database import init_db, engine
-from app import db_sqlalchemy as db
+from app import db
 import logging
 
 logging.basicConfig(level=logging.INFO)

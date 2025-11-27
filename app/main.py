@@ -1,7 +1,7 @@
 from .cli.menu_printer import print_menu, route
 from .cli import constants
 from rich.console import Console
-from .config import db
+from . import db
 
 _console = Console()
 

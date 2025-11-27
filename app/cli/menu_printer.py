@@ -3,7 +3,8 @@ from rich.console import Console
 from rich.table import Table
 from . import constants
 from ..domain.MenuFunctions import MenuFunctions
-from ..config import db, portfolio_service
+from .. import db
+from ..service import portfolio_service
 
 _console = Console()
 
