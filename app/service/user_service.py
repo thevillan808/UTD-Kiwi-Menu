@@ -7,7 +7,6 @@ from ..exceptions import (
     InvalidUsernameException,
     InvalidPasswordException,
     InvalidRoleException,
-    DuplicateUserException,
     UniqueConstraintError,
     UserNotFoundException,
     DataAccessException,
@@ -55,7 +54,6 @@ def add_user(username: str, password: str, first_name: str, last_name: str, role
         return True
         
     except (UniqueConstraintError, ValidationException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to create user {username}: {str(e)}")
@@ -70,7 +68,6 @@ def delete_user(username: str) -> bool:
     try:
         return db.delete_user(username.strip())
     except (UserNotFoundException, BusinessLogicException, ValidationException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to delete user {username}: {str(e)}")
@@ -86,14 +83,12 @@ def change_role(username: str, new_role: str) -> bool:
         raise InvalidRoleException(f"Role must be 'user' or 'admin', got '{new_role}'", "INVALID_ROLE")
     
     try:
-        # Check if user exists
         user = db.query_user(username.strip())
         if not user:
             raise UserNotFoundException(f"User '{username}' not found", "USER_NOT_FOUND")
         
         return db.update_user_role(username.strip(), new_role)
     except (UserNotFoundException, InvalidRoleException, ValidationException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to change role for user {username}: {str(e)}")
@@ -108,7 +103,6 @@ def get_user(username: str) -> Optional[User]:
     try:
         return db.query_user(username.strip())
     except ValidationException:
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to retrieve user {username}: {str(e)}")

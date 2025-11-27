@@ -1,10 +1,6 @@
-# --- Standard library imports ---
 from typing import Optional
-
-# --- Internal imports (app) ---
 from .. import db
 from ..domain.User import User
-
 
 def authenticate(username: str, password: str) -> Optional[User]:
     """Authenticate a user."""

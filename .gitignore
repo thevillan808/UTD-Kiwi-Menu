@@ -44,11 +44,15 @@ htmlcov/
 *.sqlite3
 *.db
 *.csv
-*.json
+users.json
+portfolios.json
 *.tsv
 *.dat
 *.h5
 *.hdf5
+
+# Environment
+.env
 
 # Misc
 *.bak
