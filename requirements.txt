@@ -1,2 +1,7 @@
 rich
 bcrypt
+sqlalchemy
+pymysql
+cryptography
+pytest
+pytest-cov

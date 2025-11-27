@@ -6,9 +6,7 @@ from rich.table import Table
 from rich.console import Console
 
 # --- Internal imports (app) ---
-from .. import db
-from ..domain.User import User
-from ..service import user_service, portfolio_service
+from ..config import db, user_service, portfolio_service
 
 
 class MenuFunctions:
