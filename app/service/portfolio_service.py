@@ -1,19 +1,15 @@
-import json
-import urllib.request
 import logging
 from typing import List, Dict, Optional, Tuple
 from .. import db
 from ..domain.Portfolio import Portfolio
 from ..exceptions import (
     ValidationException,
-    InvalidPortfolioDataException,
     PortfolioNotFoundException,
     UserNotFoundException,
     AuthorizationException,
     InsufficientFundsException,
     InsufficientSharesException,
     SecurityNotAvailableException,
-    BusinessLogicException,
     DataAccessException
 )
 
@@ -47,8 +43,9 @@ def get_price_map() -> Dict[str, float]:
         "UBER": 65.0
     }
 
+
 def sell_from_portfolio(username: str, symbol: str, qty: int, portfolio_id: int, sale_price: float = None) -> Tuple[bool, str]:
-    """Sell qty of symbol from portfolio."""
+    """Sell qty of symbol from portfolio and record transaction."""
     try:
         # Validate inputs
         if not isinstance(username, str) or not username.strip():
@@ -86,10 +83,16 @@ def sell_from_portfolio(username: str, symbol: str, qty: int, portfolio_id: int,
         if symbol not in price_map:
             raise SecurityNotAvailableException(f"Symbol '{symbol}' is not available for trading", "SYMBOL_NOT_AVAILABLE")
         
+        # Ensure security exists in database
+        security_name = _get_security_name(symbol)
+        db.get_or_create_security(symbol, security_name, price_map[symbol])
+        
         # Check holdings
-        holdings = portfolio.holdings.get(symbol, 0)
-        if holdings < qty:
-            raise InsufficientSharesException(f"Insufficient shares: have {holdings}, need {qty}", "INSUFFICIENT_SHARES")
+        investment = db.get_investment(portfolio_id, symbol)
+        current_holdings = investment.quantity if investment else 0
+        
+        if current_holdings < qty:
+            raise InsufficientSharesException(f"Insufficient shares: have {current_holdings}, need {qty}", "INSUFFICIENT_SHARES")
         
         # Calculate sale proceeds
         if sale_price is None:
@@ -98,26 +101,35 @@ def sell_from_portfolio(username: str, symbol: str, qty: int, portfolio_id: int,
         proceeds = sale_price * qty
         
         # Update user balance
-        user.balance += proceeds
+        new_balance = user.balance + proceeds
+        db.update_user_balance(username.strip(), new_balance)
         
-        # Update portfolio holdings
-        portfolio.holdings[symbol] = holdings - qty
-        if portfolio.holdings[symbol] == 0:
-            del portfolio.holdings[symbol]
+        # Update investment holdings
+        new_holdings = current_holdings - qty
+        db.update_investment(portfolio_id, symbol, new_holdings)
         
-        db._save()
+        # Record transaction
+        db.record_transaction(
+            username.strip(),
+            portfolio_id,
+            symbol,
+            "SELL",
+            qty,
+            sale_price
+        )
+        
         return True, "ok"
         
     except (ValidationException, UserNotFoundException, PortfolioNotFoundException, 
             AuthorizationException, SecurityNotAvailableException, InsufficientSharesException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to sell {qty} shares of {symbol} for user {username}: {str(e)}")
         raise DataAccessException(f"Failed to complete sale transaction: {str(e)}", "SALE_TRANSACTION_FAILED")
 
+
 def buy_to_portfolio(username: str, symbol: str, qty: int, portfolio_id: int) -> Tuple[bool, str]:
-    """Buy qty of symbol into portfolio."""
+    """Buy qty of symbol into portfolio and record transaction."""
     try:
         # Validate inputs
         if not isinstance(username, str) or not username.strip():
@@ -152,6 +164,10 @@ def buy_to_portfolio(username: str, symbol: str, qty: int, portfolio_id: int) ->
         if symbol not in price_map:
             raise SecurityNotAvailableException(f"Symbol '{symbol}' is not available for trading", "SYMBOL_NOT_AVAILABLE")
         
+        # Ensure security exists in database
+        security_name = _get_security_name(symbol)
+        db.get_or_create_security(symbol, security_name, price_map[symbol])
+        
         # Calculate cost
         price = price_map[symbol]
         cost = price * qty
@@ -161,27 +177,55 @@ def buy_to_portfolio(username: str, symbol: str, qty: int, portfolio_id: int) ->
             raise InsufficientFundsException(f"Insufficient funds: need ${cost:.2f}, have ${user.balance:.2f}", "INSUFFICIENT_FUNDS")
         
         # Update user balance
-        user.balance -= cost
+        new_balance = user.balance - cost
+        db.update_user_balance(username.strip(), new_balance)
         
-        # Update portfolio holdings
-        current_holdings = portfolio.holdings.get(symbol, 0)
-        portfolio.holdings[symbol] = current_holdings + qty
+        # Update investment holdings
+        investment = db.get_investment(portfolio_id, symbol)
+        current_holdings = investment.quantity if investment else 0
+        new_holdings = current_holdings + qty
+        db.update_investment(portfolio_id, symbol, new_holdings)
         
-        db._save()
+        # Record transaction
+        db.record_transaction(
+            username.strip(),
+            portfolio_id,
+            symbol,
+            "BUY",
+            qty,
+            price
+        )
+        
         return True, "ok"
         
     except (ValidationException, UserNotFoundException, PortfolioNotFoundException, 
             AuthorizationException, SecurityNotAvailableException, InsufficientFundsException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to buy {qty} shares of {symbol} for user {username}: {str(e)}")
         raise DataAccessException(f"Failed to complete purchase transaction: {str(e)}", "PURCHASE_TRANSACTION_FAILED")
 
+
+def _get_security_name(ticker: str) -> str:
+    """Get full name for security ticker"""
+    names = {
+        "AAPL": "Apple Inc.",
+        "GOOGL": "Alphabet Inc.",
+        "MSFT": "Microsoft Corporation",
+        "TSLA": "Tesla Inc.",
+        "AMZN": "Amazon.com Inc.",
+        "NVDA": "NVIDIA Corporation",
+        "META": "Meta Platforms Inc.",
+        "NFLX": "Netflix Inc.",
+        "SPOT": "Spotify Technology S.A.",
+        "UBER": "Uber Technologies Inc."
+    }
+    return names.get(ticker.upper(), ticker.upper())
+
+
 def create_portfolio(name: str, description: str, investment_strategy: str, username: str) -> Portfolio:
     """Create a new portfolio."""
     try:
-        # Validate inputs
         if not isinstance(name, str) or not name.strip():
             raise ValidationException("Portfolio name must be a non-empty string", "INVALID_PORTFOLIO_NAME")
         
@@ -194,7 +238,6 @@ def create_portfolio(name: str, description: str, investment_strategy: str, user
         if not isinstance(username, str) or not username.strip():
             raise ValidationException("Username must be a non-empty string", "INVALID_USERNAME")
         
-        # Check user exists
         user = db.query_user(username.strip())
         if not user:
             raise UserNotFoundException(f"User '{username}' not found", "USER_NOT_FOUND")
@@ -202,7 +245,6 @@ def create_portfolio(name: str, description: str, investment_strategy: str, user
         return db.create_portfolio(name.strip(), description.strip(), investment_strategy.strip(), username.strip())
         
     except (ValidationException, UserNotFoundException):
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to create portfolio for user {username}: {str(e)}")
@@ -226,11 +268,11 @@ def get_portfolio(pid: int) -> Optional[Portfolio]:
         
         return db.query_portfolio(pid)
     except ValidationException:
-        # Re-raise our custom exceptions
         raise
     except Exception as e:
         logging.error(f"Failed to retrieve portfolio {pid}: {str(e)}")
         raise DataAccessException(f"Failed to retrieve portfolio: {str(e)}", "PORTFOLIO_RETRIEVAL_FAILED")
+
 
 def update_portfolio(pid: int, actor_username: str = None, **kwargs) -> bool:
     """Update portfolio fields with permission checks."""
@@ -245,6 +287,7 @@ def update_portfolio(pid: int, actor_username: str = None, **kwargs) -> bool:
             return False
     return db.update_portfolio(pid, **kwargs)
 
+
 def delete_portfolio(pid: int, actor_username: str = None) -> bool:
     """Delete a portfolio with permission checks."""
     p = db.query_portfolio(pid)
@@ -257,3 +300,31 @@ def delete_portfolio(pid: int, actor_username: str = None) -> bool:
         if actor.username != p.owner_username and actor.role != "admin":
             return False
     return db.delete_portfolio(pid)
+
+
+def liquidate_investments(username: str) -> dict:
+    """Sell all holdings for the user."""
+    try:
+        user = db.query_user(username)
+        if not user:
+            return {"error": "user_not_found"}
+        
+        portfolios = [p for p in db.query_all_portfolios() if p.owner_username == username]
+        
+        if not portfolios:
+            return {"status": "no_holdings"}
+        
+        result = {}
+        for portfolio in portfolios:
+            for symbol, qty in portfolio.holdings.items():
+                if qty > 0:
+                    try:
+                        ok, reason = sell_from_portfolio(username, symbol, qty, portfolio.id)
+                        result[symbol] = {"ok": ok, "sold": qty}
+                    except Exception as e:
+                        result[symbol] = {"ok": False, "reason": str(e)}
+        
+        return result
+    except Exception as e:
+        logging.error(f"Failed to liquidate investments for {username}: {str(e)}")
+        return {"error": str(e)}
