@@ -6,16 +6,14 @@ from rich.table import Table
 from rich.console import Console
 
 # --- Internal imports (app) ---
-from .. import db
+from .. import data_access as db
 from ..service import user_service, portfolio_service
 
 
 class MenuFunctions:
     def sell_from_portfolio(self, username: str, symbol: str, qty: int, portfolio_id: int, sale_price: float = None):
-        """Sell a quantity of symbol for a user from a specific portfolio."""
         return portfolio_service.sell_from_portfolio(username, symbol, qty, portfolio_id, sale_price)
     def buy_to_portfolio(self, username: str, symbol: str, qty: int, portfolio_id: int):
-        """Buy a quantity of symbol for a user into a specific portfolio."""
         return portfolio_service.buy_to_portfolio(username, symbol, qty, portfolio_id)
     def __init__(
         self,
@@ -28,7 +26,6 @@ class MenuFunctions:
         self.navigator = navigator
 
     def view_users(self):
-        """Render a table of all users to the configured printer."""
         users = user_service.list_users()
         table = Table(title="Users")
         table.add_column("Username", style="cyan", no_wrap=True)
@@ -47,7 +44,6 @@ class MenuFunctions:
 
     # ---------- Portfolio / Marketplace ----------
     def view_portfolio(self, username: str):
-        """Render a portfolio table for a user."""
         user = user_service.get_user(username)
         if not user:
             if self.printer:
@@ -76,7 +72,6 @@ class MenuFunctions:
     def list_market(self):
         # static market for demo (uses mocked prices). Keep at least 3 securities.
         def _render_for(username: str | None = None):
-            """Internal renderer for the market table. If username provided, shows owned counts."""
             table = Table(title="Market Place")
             table.add_column("Symbol", style="cyan")
             table.add_column("Price", justify="right")
@@ -102,27 +97,21 @@ class MenuFunctions:
         return _render_for
 
     def buy(self, username: str, symbol: str, qty: int) -> bool:
-        """Buy a quantity of symbol for a user."""
         # returns (ok, reason)
         return portfolio_service.buy(username, symbol, qty)
 
     def sell(self, username: str, symbol: str, qty: int) -> bool:
-        """Sell a quantity of symbol for a user."""
         # returns (ok, reason)
         return portfolio_service.sell(username, symbol, qty)
 
     def add_user(self, username: str, password: str, first_name: str, last_name: str, role: str = "user") -> bool:
-        """Add a user via the user service."""
         return user_service.add_user(username, password, first_name, last_name, role)
 
     def get_price_map(self) -> dict:
-        """Return the current price map (mocked or live depending on service flag)."""
         return portfolio_service.get_price_map()
 
     def delete_user(self, username: str) -> bool:
-        """Delete a user via the user service."""
         return user_service.delete_user(username)
 
     def change_role(self, username: str, new_role: str) -> bool:
-        """Change a user's role via the user service."""
         return user_service.change_role(username, new_role)

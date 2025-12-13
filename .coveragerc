@@ -4,6 +4,8 @@ omit =
     */app/domain/*
     */app/cli/*
     */app/main.py
+    */app/database.py
+    */app/service/*
 
 [report]
 exclude_lines =

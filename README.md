@@ -1,84 +1,64 @@
-# UTD Kiwi CLI
+# Kiwi Portfolio Manager
 
-A command-line portfolio management application built for UTD coursework.
+Portfolio management web application for FTEC 6V97.
 
-## Features
+## Setup
 
-- User authentication and role management (admin/user)
-- Portfolio creation and management
-- Stock trading simulation (buy/sell operations)
-- Market data integration
-- Admin-only user management with clear UI indicators
-- Comprehensive input validation and security
-
-## Quick Start
-
-### Running the Application
+1. Install dependencies:
 ```bash
-# Windows
-run_app.bat
+pip install -r requirements.txt
+```
 
-# All platforms  
-python -m app.main
-# OR
+2. Setup MySQL database:
+```bash
+python init_db.py
+```
+
+3. Run the application:
+```bash
 python run.py
 ```
 
-### Running Tests
+The API will be available at `http://127.0.0.1:5000/api`
+
+## API Endpoints
+
+### Users
+- GET `/api/users` - Get all users
+- POST `/api/users` - Create user
+- GET `/api/users/<username>` - Get user
+- DELETE `/api/users/<username>` - Delete user
+
+### Portfolios
+- GET `/api/portfolios` - Get all portfolios
+- POST `/api/portfolios` - Create portfolio
+- GET `/api/portfolios/<id>` - Get portfolio
+- DELETE `/api/portfolios/<id>` - Delete portfolio
+
+### Investments
+- POST `/api/portfolios/<id>/securities` - Add security
+- DELETE `/api/portfolios/<id>/securities/<ticker>` - Remove security
+
+### Securities
+- GET `/api/securities` - Get all securities
+- POST `/api/securities` - Create security
+
+## Testing
+
+Run tests:
 ```bash
-# Windows (recommended)
-run_tests.bat
-
-# All platforms
-python tools/test_comprehensive.py
+pytest tests/
 ```
 
-## Project Structure
-
-```
-app/                    # Main application code
-├── cli/               # Command-line interface
-├── domain/            # Business logic and models  
-├── service/           # Service layer
-└── db.py              # Data persistence
-
-tools/                 # Testing and utilities
-├── test_comprehensive.py    # Main test suite (50+ tests)
-├── run_tests.bat           # Windows test runner
-└── TEST_COVERAGE.md        # Test documentation
-
-run_app.bat            # Windows app launcher
-run_tests.bat          # Windows test runner
-requirements.txt       # Python dependencies
+Run with coverage:
+```bash
+pytest tests/ --cov=app
 ```
 
 ## Requirements
 
 - Python 3.9+
-- Rich library (for colored console output)
-- bcrypt (for password hashing)
-
-## Installation
-
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the application: `run_app.bat` (Windows) or `python run.py`
-
-## Testing
-
-The project includes a comprehensive test suite with 50+ tests covering:
-- Authentication and session management
-- User management and admin protection
-- Portfolio operations and validation
-- Edge cases and security testing
-- Menu validation and input handling
-
-Run tests with: `run_tests.bat` (Windows) or `python tools/test_comprehensive.py`
-
-## Development
-
-- **Language**: Python 3.9+
-- **Architecture**: Layered (CLI → Service → Domain → DB)
-- **Testing**: Comprehensive suite with ASCII-compatible output
-- **Persistence**: JSON file storage with bcrypt password hashing
-- **UI**: Rich console interface with colored output
+- Flask
+- Flask-SQLAlchemy
+- MySQL
+- PyMySQL

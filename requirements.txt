@@ -6,3 +6,5 @@ cryptography
 pytest
 pytest-cov
 python-dotenv
+flask
+flask-sqlalchemy

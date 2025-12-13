@@ -1,10 +1,3 @@
-"""
-Database initialization script for Kiwi Portfolio Management System.
-
-This script initializes the MySQL database schema and populates it with
-default data including an admin user and available securities.
-"""
-
 from app.database import init_db, engine
 from app import db
 import logging
@@ -12,9 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 def initialize_database():
-    """Initialize database schema and default data"""
     try:
         logger.info("Creating database tables...")
         init_db()

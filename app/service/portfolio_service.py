@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Optional, Tuple
-from .. import db
+from .. import data_access as db
 from ..domain.Portfolio import Portfolio
 from ..exceptions import (
     ValidationException,
@@ -25,7 +25,6 @@ def clear_test_price_map():
     _TEST_PRICE_MAP = None
 
 def get_price_map() -> Dict[str, float]:
-    """Get stock prices. Uses test override if set, otherwise returns default prices."""
     if _TEST_PRICE_MAP is not None:
         return _TEST_PRICE_MAP
     
@@ -45,7 +44,6 @@ def get_price_map() -> Dict[str, float]:
 
 
 def sell_from_portfolio(username: str, symbol: str, qty: int, portfolio_id: int, sale_price: float = None) -> Tuple[bool, str]:
-    """Sell qty of symbol from portfolio and record transaction."""
     try:
         # Validate inputs
         if not isinstance(username, str) or not username.strip():
@@ -129,7 +127,6 @@ def sell_from_portfolio(username: str, symbol: str, qty: int, portfolio_id: int,
 
 
 def buy_to_portfolio(username: str, symbol: str, qty: int, portfolio_id: int) -> Tuple[bool, str]:
-    """Buy qty of symbol into portfolio and record transaction."""
     try:
         # Validate inputs
         if not isinstance(username, str) or not username.strip():
@@ -207,7 +204,6 @@ def buy_to_portfolio(username: str, symbol: str, qty: int, portfolio_id: int) ->
 
 
 def _get_security_name(ticker: str) -> str:
-    """Get full name for security ticker"""
     names = {
         "AAPL": "Apple Inc.",
         "GOOGL": "Alphabet Inc.",
@@ -224,7 +220,6 @@ def _get_security_name(ticker: str) -> str:
 
 
 def create_portfolio(name: str, description: str, investment_strategy: str, username: str) -> Portfolio:
-    """Create a new portfolio."""
     try:
         if not isinstance(name, str) or not name.strip():
             raise ValidationException("Portfolio name must be a non-empty string", "INVALID_PORTFOLIO_NAME")
@@ -252,7 +247,6 @@ def create_portfolio(name: str, description: str, investment_strategy: str, user
 
 
 def list_portfolios() -> List[Portfolio]:
-    """Return all portfolios."""
     try:
         return db.query_all_portfolios()
     except Exception as e:
@@ -261,7 +255,6 @@ def list_portfolios() -> List[Portfolio]:
 
 
 def get_portfolio(pid: int) -> Optional[Portfolio]:
-    """Return a portfolio by id."""
     try:
         if not isinstance(pid, int):
             raise ValidationException("Portfolio ID must be an integer", "INVALID_PORTFOLIO_ID")
@@ -275,7 +268,6 @@ def get_portfolio(pid: int) -> Optional[Portfolio]:
 
 
 def update_portfolio(pid: int, actor_username: str = None, **kwargs) -> bool:
-    """Update portfolio fields with permission checks."""
     p = db.query_portfolio(pid)
     if not p:
         return False
@@ -289,7 +281,6 @@ def update_portfolio(pid: int, actor_username: str = None, **kwargs) -> bool:
 
 
 def delete_portfolio(pid: int, actor_username: str = None) -> bool:
-    """Delete a portfolio with permission checks."""
     p = db.query_portfolio(pid)
     if not p:
         return False
@@ -303,7 +294,6 @@ def delete_portfolio(pid: int, actor_username: str = None) -> bool:
 
 
 def liquidate_investments(username: str) -> dict:
-    """Sell all holdings for the user."""
     try:
         user = db.query_user(username)
         if not user:
