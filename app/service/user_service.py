@@ -1,6 +1,6 @@
 from typing import List, Optional
 import logging
-from .. import db
+from .. import data_access as db
 from ..domain.User import User
 from ..exceptions import (
     ValidationException,
@@ -14,7 +14,6 @@ from ..exceptions import (
 )
 
 def list_users() -> List[User]:
-    """Return all users."""
     try:
         return db.query_all_users()
     except Exception as e:
@@ -23,7 +22,6 @@ def list_users() -> List[User]:
 
 
 def add_user(username: str, password: str, first_name: str, last_name: str, role: str = "user") -> bool:
-    """Add a new user. Returns True if created, False if username exists or invalid input."""
     # Validate input parameters
     if not username or not isinstance(username, str) or not username.strip():
         raise InvalidUsernameException("Username must be a non-empty string", "INVALID_USERNAME")
@@ -61,7 +59,6 @@ def add_user(username: str, password: str, first_name: str, last_name: str, role
 
 
 def delete_user(username: str) -> bool:
-    """Delete a user by username."""
     if not username or not isinstance(username, str) or not username.strip():
         raise InvalidUsernameException("Username must be a non-empty string", "INVALID_USERNAME")
     
@@ -75,7 +72,6 @@ def delete_user(username: str) -> bool:
 
 
 def change_role(username: str, new_role: str) -> bool:
-    """Change a user's role."""
     if not username or not isinstance(username, str) or not username.strip():
         raise InvalidUsernameException("Username must be a non-empty string", "INVALID_USERNAME")
     
@@ -96,7 +92,6 @@ def change_role(username: str, new_role: str) -> bool:
 
 
 def get_user(username: str) -> Optional[User]:
-    """Return a user by username."""
     if not username or not isinstance(username, str) or not username.strip():
         raise InvalidUsernameException("Username must be a non-empty string", "INVALID_USERNAME")
     

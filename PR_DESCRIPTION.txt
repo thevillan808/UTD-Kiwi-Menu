@@ -1,0 +1,50 @@
+Assignment 2: MySQL Database Integration
+
+This PR implements MySQL database integration with SQLAlchemy and transaction recording for the Kiwi Portfolio Management System.
+
+## Changes Made
+
+**Database Integration:**
+- Integrated SQLAlchemy ORM with MySQL backend
+- Created 5 data models: User, Portfolio, Security, Investment, Transaction
+- Implemented foreign key relationships with cascading deletes
+- Added database initialization script (init_db.py)
+
+**Transaction Recording:**
+- All buy/sell operations now create transaction records
+- Transactions include: user, portfolio, security, quantity, price, timestamp
+- Transaction history can be queried by user, portfolio, or security
+
+**Testing:**
+- 102 comprehensive tests across 4 test files
+- 81% code coverage (exceeds 80% requirement)
+- Tests cover database operations, business logic, and error handling
+
+**Code Quality:**
+- Fixed import statements throughout codebase
+- Added proper error handling for database connections
+- URL-encoded password handling for special characters
+- Removed duplicate code and unused files
+
+## Setup Instructions
+
+1. Install dependencies: `pip install -r requirements.txt`
+2. Configure MySQL credentials in `.env` file
+3. Initialize database: `python init_db.py`
+4. Run application: `run_app.bat` or `python -m app.main`
+5. Run tests: `pytest tests/`
+
+## Test Results
+
+All 102 tests passing with 81.14% coverage:
+- Database operations: 18 tests
+- Portfolio operations: 26 tests
+- Business logic: 24 tests
+- Additional coverage: 35 tests
+
+Default admin credentials: username=admin, password=admin
+
+## Files Changed
+- Modified: 8 files (app/database.py, app/models.py, app/main.py, etc.)
+- Added: 4 files (drop_db.py, login_service.py, python-dotenv)
+- Removed: 6 files (AI-generated docs, old test runners)

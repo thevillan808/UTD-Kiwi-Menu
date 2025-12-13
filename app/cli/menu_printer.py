@@ -3,7 +3,7 @@ from rich.console import Console
 from rich.table import Table
 from . import constants
 from ..domain.MenuFunctions import MenuFunctions
-from .. import db
+from .. import data_access as db
 from ..service import portfolio_service
 
 _console = Console()
@@ -58,7 +58,6 @@ Portfolio Menu
 
 # ---------- Stub Functions (replace later with MenuFunctions methods) ----------
 def _do_login():
-    """Prompt for username and password, attempt authentication, and set session user."""
     # Prompt for username and password and authenticate.
     username = _console.input("Username: ")
     password = _console.input("Password: ")
@@ -72,12 +71,10 @@ def _do_login():
     return "LOGIN_SUCCESS"
 
 def _logout():
-    """Clear the current session user and print a logout message."""
     db.set_current_user(None)
     _console.print("[yellow]Logging out...[/]")
 
 def _manage_users():
-    """Show manage users menu (admin-only) and dispatch selection."""
     # Permission check: only admin allowed
     current = db.get_current_user()
     if not current or current.role != "admin":
@@ -94,13 +91,11 @@ def _manage_users():
 
 
 def _manage_portfolios():
-    """Forwarding compatibility wrapper to the unified portfolios menu."""
     # kept for compatibility but forwards to the unified portfolios menu
     return _view_portfolios_menu()
 
 
 def _market_place():
-    """Show marketplace menu and dispatch selection."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -137,7 +132,6 @@ def _view_users():
 
 
 def _view_my_portfolio():
-    """Display the currently logged-in user's portfolio via MenuFunctions."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -146,7 +140,6 @@ def _view_my_portfolio():
 
 
 def _portfolio_buy():
-    """Interactive buy flow: prompt for symbol/quantity and call MenuFunctions.buy."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -170,7 +163,6 @@ def _portfolio_buy():
 
 
 def _portfolio_sell():
-    """Interactive sell flow: prompt for symbol/quantity and call MenuFunctions.sell."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -202,7 +194,6 @@ def _portfolio_sell():
 
 
 def _liquidate_investments():
-    """Sell all holdings for the current logged in user."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -228,7 +219,6 @@ def _liquidate_investments():
 
 
 def _sell_investment():
-    """Sell investment with prompts for Portfolio ID, Ticker, Quantity, and Sale price."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -314,7 +304,6 @@ def _list_portfolios():
 
 
 def _list_portfolios_with_values():
-    """List portfolios for the current logged-in user with ID, owner username, name, and total holdings value."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]Not logged in.[/]")
@@ -355,7 +344,6 @@ def _list_portfolios_with_values():
 
 
 def create_portfolio():
-    """Create a portfolio for the currently logged-in user. ID is auto-generated."""
     current = db.get_current_user()
     if not current:
         _console.print("[red]You must be logged in to create a portfolio.[/]")
@@ -507,12 +495,10 @@ _router: Dict[int, Dict[int, Callable[[], None]]] = {
 
 # ---------- Public API ----------
 def print_menu(menu_id: int) -> str:
-    """Print the selected menu and return user input."""
     _console.print(_menus[menu_id])
     return _console.input(">> ")
 
 def route(menu_id: int, user_selection: int) -> None:
-    """Execute the correct function based on menu_id and selection."""
     action = _router.get(menu_id, {}).get(user_selection)
     if action:
         try:

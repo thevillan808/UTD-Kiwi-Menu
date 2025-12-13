@@ -14,7 +14,6 @@ class Transaction:
         price: float,
         subtotal: float,
     ):
-        """Transaction domain model for audit purposes."""
         self.id = id
         self.timestamp = timestamp
         self.type = type.upper()  # Ensure BUY/SELL is uppercase
@@ -25,14 +24,12 @@ class Transaction:
         self.subtotal = float(subtotal)
 
     def __str__(self):
-        """String representation for debugging."""
         return (
             f"<Transaction {self.id}: {self.type} {self.quantity} {self.ticker} "
             f"@ ${self.price:.2f} = ${self.subtotal:.2f} [{self.timestamp}]>"
         )
 
     def to_dict(self) -> dict:
-        """Serialize transaction for persistence."""
         return {
             "id": self.id,
             "timestamp": self.timestamp.isoformat(),
@@ -46,7 +43,6 @@ class Transaction:
 
     @staticmethod
     def from_dict(d: dict) -> "Transaction":
-        """Deserialize a Transaction from dict."""
         # Parse timestamp from ISO format string
         timestamp_str = d.get("timestamp", "")
         if isinstance(timestamp_str, str):
