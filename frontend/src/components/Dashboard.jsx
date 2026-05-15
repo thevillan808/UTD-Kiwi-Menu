@@ -125,6 +125,17 @@ function Dashboard() {
 
     return (
         <>
+            {loading && (
+                <div style={{
+                    position: 'fixed', inset: 0,
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999,
+                }}>
+                    <Spinner animation="border" variant="dark" />
+                </div>
+            )}
+
             <Navbar bg="dark" variant="dark" expand="lg">
                 <Container>
                     <Navbar.Brand href="#">Kiwi</Navbar.Brand>
@@ -135,12 +146,8 @@ function Dashboard() {
                 </Container>
             </Navbar>
 
+            {!loading && (
             <Container className="mt-4">
-                {loading ? (
-                    <div className="text-center mt-5">
-                        <Spinner animation="border" variant="success" />
-                    </div>
-                ) : (
                     <Tabs activeKey={activeTab} onSelect={k => setActiveTab(k)} className="mb-3">
                         <Tab eventKey="portfolios" title="Portfolios">
                             <PortfolioList
@@ -187,8 +194,8 @@ function Dashboard() {
                             <TransactionLog transactions={transactions} />
                         </Tab>
                     </Tabs>
-                )}
             </Container>
+            )}
 
             <CreatePortfolioModal
                 show={showCreateModal}
