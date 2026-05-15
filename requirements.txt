@@ -1,6 +1,11 @@
-rich
-bcrypt
-sqlalchemy
+flask
+flask-sqlalchemy
+flask-caching
+flask-cors
+pydantic
+PyJWT
+requests
+python-dotenv
 pymysql
 cryptography
 pytest
