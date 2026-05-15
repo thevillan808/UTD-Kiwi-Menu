@@ -19,6 +19,17 @@ def get_all_portfolios():
     return jsonify([portfolio.__to_dict__() for portfolio in portfolios]), 200
 
 
+@portfolio_bp.route('/all', methods=['GET'])
+@require_auth
+def get_portfolios_for_current_user():
+    current_user = g.current_user
+    user = user_service.get_user_by_username(current_user)
+    if user is None:
+        return jsonify({'error': 'Not Found', 'detail': f'User {current_user} not found'}), 404
+    portfolios = portfolio_service.get_portfolios_by_user(user)
+    return jsonify([portfolio.__to_dict__() for portfolio in portfolios]), 200
+
+
 @portfolio_bp.route('/<int:portfolio_id>', methods=['GET'])
 @require_auth
 def get_portfolio(portfolio_id):

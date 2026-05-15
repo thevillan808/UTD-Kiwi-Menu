@@ -8,7 +8,7 @@ import HoldingsPanel from './HoldingsPanel'
 import TradePanel from './TradePanel'
 import TransactionLog from './TransactionLog'
 
-const API = import.meta.env.VITE_API_BASE_URL
+const API = ''
 
 async function apiFetch(path, options = {}) {
     const token = getAccessToken()
@@ -48,16 +48,16 @@ function Dashboard() {
     }
 
     function fetchPortfolios() {
-        return apiFetch(`/portfolios/user/${username}`)
+        return apiFetch('/api/portfolios/all')
             .then(data => setPortfolios(data))
             .catch(e => showToast(e.message, 'danger'))
     }
 
     function loadPortfolioDetail(id) {
-        apiFetch(`/portfolios/${id}`)
+        apiFetch(`/api/portfolios/${id}`)
             .then(data => setSelectedPortfolio(data))
             .catch(e => showToast(e.message, 'danger'))
-        apiFetch(`/portfolios/${id}/transactions`)
+        apiFetch(`/api/portfolios/${id}/transactions`)
             .then(data => setTransactions(data))
             .catch(() => setTransactions([]))
     }
@@ -73,7 +73,7 @@ function Dashboard() {
 
     async function handleCreatePortfolio(name, description) {
         try {
-            await apiFetch('/portfolios/', {
+            await apiFetch('/api/portfolios/', {
                 method: 'POST',
                 body: JSON.stringify({ username, name, description }),
             })
@@ -87,7 +87,7 @@ function Dashboard() {
 
     async function handleDeletePortfolio() {
         try {
-            await apiFetch(`/portfolios/${portfolioToDelete.id}`, { method: 'DELETE' })
+            await apiFetch(`/api/portfolios/${portfolioToDelete.id}`, { method: 'DELETE' })
             setPortfolioToDelete(null)
             showToast('Portfolio deleted.')
             if (selectedPortfolio?.id === portfolioToDelete.id) {
@@ -102,7 +102,7 @@ function Dashboard() {
 
     async function handleBuy(portfolioId, ticker, quantity) {
         try {
-            await apiFetch('/trades/buy', {
+            await apiFetch('/api/trades/buy', {
                 method: 'POST',
                 body: JSON.stringify({ ticker, portfolio_id: portfolioId, quantity }),
             })
@@ -115,7 +115,7 @@ function Dashboard() {
 
     async function handleSell(portfolioId, ticker, quantity) {
         try {
-            await apiFetch('/trades/sell', {
+            await apiFetch('/api/trades/sell', {
                 method: 'POST',
                 body: JSON.stringify({ ticker, portfolio_id: portfolioId, quantity }),
             })
