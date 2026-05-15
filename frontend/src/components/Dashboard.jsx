@@ -86,18 +86,15 @@ function Dashboard() {
     }
 
     async function handleDeletePortfolio() {
-        try {
-            await apiFetch(`/api/portfolios/${portfolioToDelete.id}`, { method: 'DELETE' })
-            setPortfolioToDelete(null)
-            showToast('Portfolio deleted.')
-            if (selectedPortfolio?.id === portfolioToDelete.id) {
-                setSelectedPortfolio(null)
-                setActiveTab('portfolios')
-            }
-            fetchPortfolios()
-        } catch (e) {
-            showToast(e.message, 'danger')
+        // Let errors propagate — the modal catches and displays them inline
+        await apiFetch(`/api/portfolios/${portfolioToDelete.id}`, { method: 'DELETE' })
+        setPortfolioToDelete(null)
+        showToast('Portfolio deleted.')
+        if (selectedPortfolio?.id === portfolioToDelete.id) {
+            setSelectedPortfolio(null)
+            setActiveTab('portfolios')
         }
+        fetchPortfolios()
     }
 
     async function handleBuy(portfolioId, ticker, quantity) {
@@ -201,9 +198,9 @@ function Dashboard() {
 
             <DeletePortfolioModal
                 show={!!portfolioToDelete}
-                onHide={() => setPortfolioToDelete(null)}
+                onClose={() => setPortfolioToDelete(null)}
                 portfolio={portfolioToDelete}
-                onConfirm={handleDeletePortfolio}
+                onDelete={handleDeletePortfolio}
             />
 
             <ToastContainer position="bottom-end" className="p-3">
