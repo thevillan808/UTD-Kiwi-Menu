@@ -21,7 +21,7 @@ function TransactionLog({ transactions }) {
                     <tr key={i}>
                         <td className="fw-semibold">{t.ticker}</td>
                         <td>
-                            <span className={t.transaction_type === 'buy' ? 'text-success' : 'text-danger'}>
+                            <span className={t.transaction_type?.toUpperCase() === 'BUY' ? 'text-success' : 'text-danger'}>
                                 {t.transaction_type}
                             </span>
                         </td>

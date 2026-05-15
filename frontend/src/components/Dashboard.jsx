@@ -21,6 +21,12 @@ async function apiFetch(path, options = {}) {
         },
     })
     const data = await res.json()
+    if (res.status === 403) {
+        // Expired or missing token — clear session and redirect to login
+        localStorage.removeItem('id_token')
+        window.location.href = '/login'
+        return
+    }
     if (!res.ok) throw new Error(data.detail || data.error || 'Request failed')
     return data
 }
