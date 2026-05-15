@@ -126,3 +126,31 @@ def test_non_owner_cannot_grant_access(client, owner_and_portfolio):
             headers={'Authorization': 'Bearer fake'},
         )
         assert resp.status_code == 403
+
+
+def test_grant_access_invalid_role_raises(owner_and_portfolio, db_session):
+    portfolio = owner_and_portfolio['portfolio']
+    with pytest.raises(access_service.AccessError):
+        access_service.grant_access(portfolio.id, 'some_user', 'invalid_role')
+
+
+def test_grant_access_updates_existing_role(owner_and_portfolio, db_session):
+    portfolio = owner_and_portfolio['portfolio']
+    access_service.grant_access(portfolio.id, 'viewer_user', 'manager')
+    db_session.commit()
+    role = access_service.get_role(portfolio.id, 'viewer_user')
+    assert role == 'manager'
+
+
+def test_revoke_access_success(owner_and_portfolio, db_session):
+    portfolio = owner_and_portfolio['portfolio']
+    access_service.revoke_access(portfolio.id, 'viewer_user')
+    db_session.commit()
+    role = access_service.get_role(portfolio.id, 'viewer_user')
+    assert role is None
+
+
+def test_revoke_access_not_found_raises(owner_and_portfolio, db_session):
+    portfolio = owner_and_portfolio['portfolio']
+    with pytest.raises(access_service.AccessError):
+        access_service.revoke_access(portfolio.id, 'non_existent_user')

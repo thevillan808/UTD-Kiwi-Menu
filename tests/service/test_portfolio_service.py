@@ -77,3 +77,16 @@ def test_delete_portfolio(setup, db_session):
 def test_delete_portfolio_invalid_id(db_session):
     with pytest.raises(portfolio_service.UnsupportedPortfolioOperationError):
         portfolio_service.delete_portfolio(9999)
+
+
+def test_delete_portfolio_with_holdings_raises(setup, db_session):
+    p = setup['portfolio1']  # has an AAPL investment in setup
+    with pytest.raises(portfolio_service.UnsupportedPortfolioOperationError):
+        portfolio_service.delete_portfolio(p.id)
+
+
+def test_list_investments(setup, db_session):
+    p = setup['portfolio1']
+    investments = portfolio_service.list_investments(p.id)
+    assert len(investments) == 1
+    assert investments[0].ticker == 'AAPL'

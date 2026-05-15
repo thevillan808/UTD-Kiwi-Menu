@@ -84,6 +84,46 @@ def test_buy_invalid_portfolio(db_session):
             trade_service.execute_purchase_order(9999, 'AAPL', 1)
 
 
+def test_buy_invalid_params_raises(db_session):
+    with pytest.raises(TradeExecutionException):
+        trade_service.execute_purchase_order(None, 'AAPL', 1)
+
+
+def test_buy_zero_quantity_raises(db_session):
+    with pytest.raises(TradeExecutionException):
+        trade_service.execute_purchase_order(1, 'AAPL', 0)
+
+
+def test_buy_adds_to_existing_investment(setup, db_session):
+    portfolio = setup['portfolio']
+    with patch('app.service.trade_service.get_quote') as mock_q:
+        mock_q.return_value = _mock_quote('AAPL', 100.0)
+        trade_service.execute_purchase_order(portfolio.id, 'AAPL', 3)
+        db_session.commit()
+
+    with patch('app.service.trade_service.get_quote') as mock_q:
+        mock_q.return_value = _mock_quote('AAPL', 100.0)
+        trade_service.execute_purchase_order(portfolio.id, 'AAPL', 2)
+        db_session.commit()
+
+    inv = db_session.query(Investment).filter_by(portfolio_id=portfolio.id, ticker='AAPL').one_or_none()
+    assert inv is not None
+    assert inv.quantity == 5
+
+
+def test_sell_invalid_portfolio_raises(db_session):
+    with pytest.raises(TradeExecutionException):
+        trade_service.liquidate_investment(9999, 'AAPL', 1)
+
+
+def test_sell_invalid_ticker_raises(setup, db_session):
+    portfolio = setup['portfolio']
+    with patch('app.service.trade_service.get_quote') as mock_q:
+        mock_q.return_value = None
+        with pytest.raises(TradeExecutionException):
+            trade_service.liquidate_investment(portfolio.id, 'FAKEXXX', 1)
+
+
 def test_sell_reduces_investment(setup, db_session):
     portfolio = setup['portfolio']
     user = setup['user']
