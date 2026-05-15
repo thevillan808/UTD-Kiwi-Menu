@@ -1,7 +1,11 @@
+import logging
+import time
 from dataclasses import dataclass
 
 import requests
 from flask import current_app
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -33,6 +37,8 @@ def get_company_name(ticker):
     }
     response = requests.get(url, params=params, timeout=10)
     data = response.json()
+    logger.debug('AV OVERVIEW response keys: %s', list(data.keys()))
+    logger.debug('AV OVERVIEW Name: %r', data.get('Name'))
 
     name = data.get('Name')
     if not name:
@@ -50,6 +56,10 @@ def get_price_data(ticker):
     if cached is not None:
         return cached
 
+    # Respect Alpha Vantage free-tier rate limit: 1 request per second.
+    # get_company_name already made one call so we wait before the next one.
+    time.sleep(1.2)
+
     api_key = _get_api_key()
     url = 'https://www.alphavantage.co/query'
     params = {
@@ -59,6 +69,10 @@ def get_price_data(ticker):
     }
     response = requests.get(url, params=params, timeout=10)
     data = response.json()
+    logger.debug('AV TIME_SERIES_DAILY response keys: %s', list(data.keys()))
+    has_ts = 'Time Series (Daily)' in data
+    logger.debug('AV TIME_SERIES_DAILY has_ts: %s, Note: %r, Info: %r',
+                 has_ts, data.get('Note'), data.get('Information'))
 
     time_series = data.get('Time Series (Daily)')
     if not time_series:
